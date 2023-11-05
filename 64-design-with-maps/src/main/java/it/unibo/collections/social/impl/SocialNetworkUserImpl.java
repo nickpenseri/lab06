@@ -36,6 +36,7 @@ public final class SocialNetworkUserImpl<U extends User> extends UserImpl implem
      * In order to save the people followed by a user organized in groups, adopt
      * a generic-type Map:  think of what type of keys and values would best suit the requirements
      */
+    Map<String, Set<U>> followedPeople;
 
     /*
      * [CONSTRUCTORS]
@@ -62,13 +63,17 @@ public final class SocialNetworkUserImpl<U extends User> extends UserImpl implem
      *            application
      */
     public SocialNetworkUserImpl(final String name, final String surname, final String user, final int userAge) {
-        super(null, null, null, 0);
+        super(name, surname, user, userAge);
+        this.followedPeople = new HashMap<>();
     }
 
     /*
      * 2) Define a further constructor where the age defaults to -1
      */
 
+    public SocialNetworkUserImpl(final String name, final String surname, final String user) {
+        this(name, surname, user, -1);
+    }
     /*
      * [METHODS]
      *
@@ -76,7 +81,12 @@ public final class SocialNetworkUserImpl<U extends User> extends UserImpl implem
      */
     @Override
     public boolean addFollowedUser(final String circle, final U user) {
-        return false;
+        Set<U> circleFollowed = this.followedPeople.get(circle);
+        if (circleFollowed == null) {
+            circleFollowed = new HashSet<>();
+            this.followedPeople.put(circle, circleFollowed);
+        }
+        return circleFollowed.add(user);
     }
 
     /**
@@ -86,11 +96,19 @@ public final class SocialNetworkUserImpl<U extends User> extends UserImpl implem
      */
     @Override
     public Collection<U> getFollowedUsersInGroup(final String groupName) {
-        return null;
+        final Collection<U> usersInGroup = this.followedPeople.get(groupName);
+        if (usersInGroup != null) {
+            return new ArrayList<>(usersInGroup);
+        }
+        return Collections.emptyList();
     }
 
     @Override
     public List<U> getFollowedUsers() {
-        return null;
+        Set <U> followedUsers = new HashSet<>();
+        for (var element : this.followedPeople.values()) {
+            followedUsers.addAll(element);
+        }
+        return new ArrayList<>(followedUsers);
     }
 }
